@@ -81,20 +81,22 @@ class MacosPatcher extends Patcher {
     required ReleaseArtifact releaseArtifact,
     required File releaseArchive,
     required File patchArchive,
+    bool dryRun = false,
   }) async {
     // Check for diffs without warning about native changes, as Xcode builds
     // can be nondeterministic. So we still have some hope of alerting users of
     // unpatchable native changes, we compare the Podfile.lock hash between the
     // patch and the release.
-    final diffStatus = await patchDiffChecker
-        .confirmUnpatchableDiffsIfNecessary(
-          localArchive: patchArchive,
-          releaseArchive: releaseArchive,
-          archiveDiffer: const AppleArchiveDiffer(),
-          allowAssetChanges: allowAssetDiffs,
-          allowNativeChanges: allowNativeDiffs,
-          confirmNativeChanges: false,
-        );
+    final diffStatus =
+        await patchDiffChecker.confirmUnpatchableDiffsIfNecessary(
+      localArchive: patchArchive,
+      releaseArchive: releaseArchive,
+      archiveDiffer: const AppleArchiveDiffer(),
+      allowAssetChanges: allowAssetDiffs,
+      allowNativeChanges: allowNativeDiffs,
+      confirmNativeChanges: false,
+      dryRun: dryRun,
+    );
 
     if (!diffStatus.hasNativeChanges) {
       return diffStatus;
@@ -144,8 +146,7 @@ For more information see: ${supportedFlutterVersionsUrl.toLink()}''');
       codesign: codesign,
       flavor: flavor,
       target: target,
-      args:
-          argResults.forwardedArgs +
+      args: argResults.forwardedArgs +
           buildNameAndNumberArgsFromReleaseVersion(releaseVersion),
       base64PublicKey: argResults.encodedPublicKey,
     );
@@ -287,9 +288,10 @@ For more information see: ${supportedFlutterVersionsUrl.toLink()}''');
   @override
   Future<CreatePatchMetadata> updatedCreatePatchMetadata(
     CreatePatchMetadata metadata,
-  ) async => metadata.copyWith(
-    environment: metadata.environment.copyWith(
-      xcodeVersion: await xcodeBuild.version(),
-    ),
-  );
+  ) async =>
+      metadata.copyWith(
+        environment: metadata.environment.copyWith(
+          xcodeVersion: await xcodeBuild.version(),
+        ),
+      );
 }

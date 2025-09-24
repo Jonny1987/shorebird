@@ -67,13 +67,16 @@ class AarPatcher extends Patcher {
     required ReleaseArtifact releaseArtifact,
     required File releaseArchive,
     required File patchArchive,
-  }) => patchDiffChecker.confirmUnpatchableDiffsIfNecessary(
-    localArchive: patchArchive,
-    releaseArchive: releaseArchive,
-    archiveDiffer: const AndroidArchiveDiffer(),
-    allowAssetChanges: allowAssetDiffs,
-    allowNativeChanges: allowNativeDiffs,
-  );
+    bool dryRun = false,
+  }) =>
+      patchDiffChecker.confirmUnpatchableDiffsIfNecessary(
+        localArchive: patchArchive,
+        releaseArchive: releaseArchive,
+        archiveDiffer: const AndroidArchiveDiffer(),
+        allowAssetChanges: allowAssetDiffs,
+        allowNativeChanges: allowNativeDiffs,
+        dryRun: dryRun,
+      );
 
   @override
   Future<File> buildPatchArtifact({String? releaseVersion}) async {

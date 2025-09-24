@@ -215,9 +215,8 @@ NOTE: this is ${styleBold.wrap('not')} recommended. Asset changes cannot be incl
       return ExitCode.usage.code;
     }
 
-    final patcherFutures = results.releaseTypes
-        .map(_resolvePatcher)
-        .map(createPatch);
+    final patcherFutures =
+        results.releaseTypes.map(_resolvePatcher).map(createPatch);
 
     for (final patcherFuture in patcherFutures) {
       await patcherFuture;
@@ -333,8 +332,8 @@ NOTE: this is ${styleBold.wrap('not')} recommended. Asset changes cannot be incl
     } else if (shorebirdEnv.canAcceptUserInput) {
       release = await promptForRelease(releasePlatform);
     } else {
-      final flutterVersionString = await shorebirdFlutter
-          .getVersionAndRevision();
+      final flutterVersionString =
+          await shorebirdFlutter.getVersionAndRevision();
       logger.warn('''
 The release version to patch was not specified.
 Building with Flutter $flutterVersionString to determine the release version...
@@ -376,13 +375,13 @@ Building with Flutter $flutterVersionString to determine the release version...
 
     final supplementalArtifact =
         patcher.supplementaryReleaseArtifactArch != null
-        ? await codePushClientWrapper.maybeGetReleaseArtifact(
-            appId: appId,
-            releaseId: release.id,
-            arch: patcher.supplementaryReleaseArtifactArch!,
-            platform: releasePlatform,
-          )
-        : null;
+            ? await codePushClientWrapper.maybeGetReleaseArtifact(
+                appId: appId,
+                releaseId: release.id,
+                arch: patcher.supplementaryReleaseArtifactArch!,
+                platform: releasePlatform,
+              )
+            : null;
 
     final releaseArchive = await downloadReleaseArtifact(
       releaseArtifact: releaseArtifact,
@@ -402,8 +401,8 @@ Building with Flutter $flutterVersionString to determine the release version...
 
         // Don't built the patch artifact twice with the same Flutter revision.
         if (lastBuiltFlutterRevision != release.flutterRevision) {
-          final flutterVersionString = await shorebirdFlutter
-              .getVersionAndRevision();
+          final flutterVersionString =
+              await shorebirdFlutter.getVersionAndRevision();
           logger.info('''
 Building patch with Flutter $flutterVersionString
 ''');
@@ -412,11 +411,13 @@ Building patch with Flutter $flutterVersionString
           );
         }
 
+        final dryRun = results['dry-run'] == true;
         final diffStatus = await assertUnpatchableDiffs(
           releaseArtifact: releaseArtifact,
           releaseArchive: releaseArchive,
           patchArchive: patchArtifactFile!,
           patcher: patcher,
+          dryRun: dryRun,
         );
         final patchArtifactBundles = await patcher.createPatchArtifacts(
           appId: appId,
@@ -425,7 +426,6 @@ Building patch with Flutter $flutterVersionString
           supplementArtifact: supplementArchive,
         );
 
-        final dryRun = results['dry-run'] == true;
         if (dryRun) {
           logger
             ..info('No issues detected.')
@@ -530,12 +530,14 @@ Please re-run the release command for this version or create a new release.''');
     required File patchArchive,
     required File releaseArchive,
     required Patcher patcher,
+    bool dryRun = false,
   }) async {
     try {
       return patcher.assertUnpatchableDiffs(
         releaseArtifact: releaseArtifact,
         releaseArchive: releaseArchive,
         patchArchive: patchArchive,
+        dryRun: dryRun,
       );
     } on UserCancelledException {
       throw ProcessExit(ExitCode.success.code);

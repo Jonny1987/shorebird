@@ -39,6 +39,7 @@ class LinuxPatcher extends Patcher {
     required ReleaseArtifact releaseArtifact,
     required File releaseArchive,
     required File patchArchive,
+    bool dryRun = false,
   }) async {
     return patchDiffChecker.confirmUnpatchableDiffsIfNecessary(
       localArchive: patchArchive,
@@ -46,6 +47,7 @@ class LinuxPatcher extends Patcher {
       archiveDiffer: const LinuxBundleDiffer(),
       allowAssetChanges: allowAssetDiffs,
       allowNativeChanges: allowNativeDiffs,
+      dryRun: dryRun,
     );
   }
 

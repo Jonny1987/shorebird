@@ -39,8 +39,7 @@ class AndroidPatcher extends Patcher {
   /// Android versions prior to 3.24.2 have a bug that can cause patches to
   /// be erroneously uninstalled.
   /// https://github.com/shorebirdtech/updater/issues/211 was fixed in 3.24.2
-  static final updaterPatchErrorWarning =
-      '''
+  static final updaterPatchErrorWarning = '''
 Your version of flutter contains a known issue that can cause patches to be erroneously uninstalled in apps that use package:flutter_foreground_task or other plugins that start their own Flutter engines.
 This issue was fixed in Flutter 3.24.2. Please upgrade to a newer version of Flutter to avoid this issue.
 
@@ -58,13 +57,16 @@ See more info about the issue ${link(uri: Uri.parse('https://github.com/shorebir
     required ReleaseArtifact releaseArtifact,
     required File releaseArchive,
     required File patchArchive,
-  }) => patchDiffChecker.confirmUnpatchableDiffsIfNecessary(
-    localArchive: patchArchive,
-    releaseArchive: releaseArchive,
-    archiveDiffer: const AndroidArchiveDiffer(),
-    allowAssetChanges: allowAssetDiffs,
-    allowNativeChanges: allowNativeDiffs,
-  );
+    bool dryRun = false,
+  }) =>
+      patchDiffChecker.confirmUnpatchableDiffsIfNecessary(
+        localArchive: patchArchive,
+        releaseArchive: releaseArchive,
+        archiveDiffer: const AndroidArchiveDiffer(),
+        allowAssetChanges: allowAssetDiffs,
+        allowNativeChanges: allowNativeDiffs,
+        dryRun: dryRun,
+      );
 
   @override
   Future<void> assertPreconditions() async {
@@ -92,8 +94,7 @@ See more info about the issue ${link(uri: Uri.parse('https://github.com/shorebir
     final aabFile = await artifactBuilder.buildAppBundle(
       flavor: flavor,
       target: target,
-      args:
-          argResults.forwardedArgs +
+      args: argResults.forwardedArgs +
           buildNameAndNumberArgsFromReleaseVersion(releaseVersion),
       base64PublicKey: argResults.encodedPublicKey,
     );
@@ -155,11 +156,11 @@ Please refer to ${link(uri: Uri.parse('https://github.com/shorebirdtech/shorebir
 
     for (final (i, releaseArtifact) in releaseArtifacts.entries.indexed) {
       try {
-        final releaseArtifactFile = await artifactManager
-            .downloadWithProgressUpdates(
-              Uri.parse(releaseArtifact.value.url),
-              message: 'Downloading release artifact ${i + 1}/$numArtifacts',
-            );
+        final releaseArtifactFile =
+            await artifactManager.downloadWithProgressUpdates(
+          Uri.parse(releaseArtifact.value.url),
+          message: 'Downloading release artifact ${i + 1}/$numArtifacts',
+        );
         releaseArtifactPaths[releaseArtifact.key] = releaseArtifactFile.path;
       } on Exception {
         throw ProcessExit(ExitCode.software.code);

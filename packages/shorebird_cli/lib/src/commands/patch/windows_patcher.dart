@@ -60,6 +60,7 @@ class WindowsPatcher extends Patcher {
     required ReleaseArtifact releaseArtifact,
     required File releaseArchive,
     required File patchArchive,
+    bool dryRun = false,
   }) {
     return patchDiffChecker.confirmUnpatchableDiffsIfNecessary(
       localArchive: patchArchive,
@@ -67,6 +68,7 @@ class WindowsPatcher extends Patcher {
       archiveDiffer: const WindowsArchiveDiffer(),
       allowAssetChanges: allowAssetDiffs,
       allowNativeChanges: allowNativeDiffs,
+      dryRun: dryRun,
     );
   }
 
@@ -145,8 +147,8 @@ class WindowsPatcher extends Patcher {
       outputDirectory: outputDirectory,
     );
     final exeFile = outputDirectory.listSync().whereType<File>().firstWhere(
-      (file) => p.extension(file.path) == '.exe',
-    );
+          (file) => p.extension(file.path) == '.exe',
+        );
     return powershell.getExeVersionString(exeFile);
   }
 }

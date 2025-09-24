@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
 import 'package:collection/collection.dart';
@@ -105,6 +106,48 @@ abstract class ArchiveDiffer {
           // to tell if file contents differ is if their checksums differ.
           file.filename: file.crc32.toString(),
       };
+    });
+  }
+
+  /// Extracts the content of a specific file from the archive.
+  Future<Uint8List?> extractFileContent(File archive, String filePath) async {
+    return Isolate.run(() {
+      final zipDirectory = ZipDirectory()..read(InputFileStream(archive.path));
+
+      for (final file in zipDirectory.fileHeaders) {
+        if (file.filename == filePath) {
+          final inputStream = InputFileStream(archive.path);
+          final archiveData = ZipDecoder().decodeStream(inputStream);
+          inputStream.closeSync();
+
+          for (final archiveFile in archiveData.files) {
+            if (archiveFile.name == filePath && archiveFile.isFile) {
+              return archiveFile.content;
+            }
+          }
+          break;
+        }
+      }
+      return null;
+    });
+  }
+
+  /// Extracts content for all asset files from the archive.
+  Future<Map<String, Uint8List>> extractAssetContents(File archive) async {
+    return Isolate.run(() {
+      final inputStream = InputFileStream(archive.path);
+      final archiveData = ZipDecoder().decodeStream(inputStream);
+      inputStream.closeSync();
+
+      final assetContents = <String, Uint8List>{};
+
+      for (final archiveFile in archiveData.files) {
+        if (archiveFile.isFile && isAssetFilePath(archiveFile.name)) {
+          assetContents[archiveFile.name] = archiveFile.content;
+        }
+      }
+
+      return assetContents;
     });
   }
 }

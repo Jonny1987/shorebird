@@ -96,13 +96,16 @@ class IosFrameworkPatcher extends Patcher {
     required ReleaseArtifact releaseArtifact,
     required File releaseArchive,
     required File patchArchive,
-  }) => patchDiffChecker.confirmUnpatchableDiffsIfNecessary(
-    localArchive: patchArchive,
-    releaseArchive: releaseArchive,
-    archiveDiffer: const AppleArchiveDiffer(),
-    allowAssetChanges: allowAssetDiffs,
-    allowNativeChanges: allowNativeDiffs,
-  );
+    bool dryRun = false,
+  }) =>
+      patchDiffChecker.confirmUnpatchableDiffsIfNecessary(
+        localArchive: patchArchive,
+        releaseArchive: releaseArchive,
+        archiveDiffer: const AppleArchiveDiffer(),
+        allowAssetChanges: allowAssetDiffs,
+        allowNativeChanges: allowNativeDiffs,
+        dryRun: dryRun,
+      );
 
   @override
   Future<File> buildPatchArtifact({String? releaseVersion}) async {
@@ -197,9 +200,8 @@ class IosFrameworkPatcher extends Patcher {
       lastBuildLinkMetadata = result.linkMetadata;
     }
 
-    final patchBuildFile = useLinker
-        ? File(_vmcodeOutputPath)
-        : aotSnapshotFile;
+    final patchBuildFile =
+        useLinker ? File(_vmcodeOutputPath) : aotSnapshotFile;
     final File patchFile;
     if (await aotTools.isGeneratePatchDiffBaseSupported()) {
       final patchBaseProgress = logger.progress('Generating patch diff base');
@@ -260,11 +262,12 @@ class IosFrameworkPatcher extends Patcher {
   @override
   Future<CreatePatchMetadata> updatedCreatePatchMetadata(
     CreatePatchMetadata metadata,
-  ) async => metadata.copyWith(
-    linkPercentage: lastBuildLinkPercentage,
-    linkMetadata: lastBuildLinkMetadata,
-    environment: metadata.environment.copyWith(
-      xcodeVersion: await xcodeBuild.version(),
-    ),
-  );
+  ) async =>
+      metadata.copyWith(
+        linkPercentage: lastBuildLinkPercentage,
+        linkMetadata: lastBuildLinkMetadata,
+        environment: metadata.environment.copyWith(
+          xcodeVersion: await xcodeBuild.version(),
+        ),
+      );
 }

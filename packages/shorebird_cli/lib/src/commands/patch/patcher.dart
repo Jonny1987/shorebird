@@ -79,6 +79,7 @@ More info: ${troubleshootingUrl.toLink()}.
     required ReleaseArtifact releaseArtifact,
     required File releaseArchive,
     required File patchArchive,
+    bool dryRun = false,
   });
 
   /// Builds the patch artifacts for the given platform. Returns the "primary"
